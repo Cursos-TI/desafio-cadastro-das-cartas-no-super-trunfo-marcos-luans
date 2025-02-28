@@ -15,12 +15,12 @@ void salvarCarta(Carta carta, const char *modo) {
         printf("Erro ao abrir o arquivo para salvar!\n");
         return;
     }
-    
+
     fprintf(arquivo, "%s %s %s %d %.2f %.2f %d %.2f %.2f\n",
             carta.codigo, carta.estado, carta.cidade,
             carta.populacao, carta.area, carta.pib, carta.pontos_turisticos,
             carta.densidade_populacional, carta.pib_per_capita);
-    
+
     fclose(arquivo);
 }
 
@@ -65,15 +65,125 @@ void mostrarCartas(Carta cartas[], int total_cartas) {
     }
 }
 
-void compararCartas(Carta cartas[], int total_cartas) {
+// Função para comparar os atributos
+void compararAtributos(Carta *carta1, Carta *carta2, int atributo1, int atributo2) {
+    float valor1_1, valor2_1, valor1_2, valor2_2;
+    char atributo_nome1[50], atributo_nome2[50];
+    int inverso1 = 0, inverso2 = 0;
+
+    // Primeiro atributo
+    switch (atributo1) {
+        case 1:
+            valor1_1 = carta1->populacao;
+            valor2_1 = carta2->populacao;
+            strcpy(atributo_nome1, "População");
+            break;
+        case 2:
+            valor1_1 = carta1->area;
+            valor2_1 = carta2->area;
+            strcpy(atributo_nome1, "Área");
+            break;
+        case 3:
+            valor1_1 = carta1->pib;
+            valor2_1 = carta2->pib;
+            strcpy(atributo_nome1, "PIB");
+            break;
+        case 4:
+            valor1_1 = carta1->pontos_turisticos;
+            valor2_1 = carta2->pontos_turisticos;
+            strcpy(atributo_nome1, "Pontos Turísticos");
+            break;
+        case 5:
+            valor1_1 = carta1->densidade_populacional;
+            valor2_1 = carta2->densidade_populacional;
+            strcpy(atributo_nome1, "Densidade Demográfica");
+            inverso1 = 1;
+            break;
+        default:
+            printf("Opção inválida para o primeiro atributo!\n");
+            return;
+    }
+
+    // Segundo atributo
+    switch (atributo2) {
+        case 1:
+            valor1_2 = carta1->populacao;
+            valor2_2 = carta2->populacao;
+            strcpy(atributo_nome2, "População");
+            break;
+        case 2:
+            valor1_2 = carta1->area;
+            valor2_2 = carta2->area;
+            strcpy(atributo_nome2, "Área");
+            break;
+        case 3:
+            valor1_2 = carta1->pib;
+            valor2_2 = carta2->pib;
+            strcpy(atributo_nome2, "PIB");
+            break;
+        case 4:
+            valor1_2 = carta1->pontos_turisticos;
+            valor2_2 = carta2->pontos_turisticos;
+            strcpy(atributo_nome2, "Pontos Turísticos");
+            break;
+        case 5:
+            valor1_2 = carta1->densidade_populacional;
+            valor2_2 = carta2->densidade_populacional;
+            strcpy(atributo_nome2, "Densidade Demográfica");
+            inverso2 = 1;
+            break;
+        default:
+            printf("Opção inválida para o segundo atributo!\n");
+            return;
+    }
+
+    // Comparação dos dois atributos
+    printf("\n--- Comparação entre %s e %s ---\n", atributo_nome1, atributo_nome2);
+    printf("%s (%s): %.2f x %.2f (%s)\n", carta1->cidade, carta1->estado, valor1_1, valor2_1, carta2->cidade);
+    printf("%s (%s): %.2f x %.2f (%s)\n", carta1->cidade, carta1->estado, valor1_2, valor2_2, carta2->cidade);
+
+    // Resultado para o primeiro atributo
+    printf("Resultado para %s: %s\n", atributo_nome1,
+        (valor1_1 == valor2_1) ? "Empate" :
+        ((valor1_1 > valor2_1 && !inverso1) || (valor1_1 < valor2_1 && inverso1)) ? carta1->cidade : carta2->cidade);
+
+    // Resultado para o segundo atributo
+    printf("Resultado para %s: %s\n", atributo_nome2,
+        (valor1_2 == valor2_2) ? "Empate" :
+        ((valor1_2 > valor2_2 && !inverso2) || (valor1_2 < valor2_2 && inverso2)) ? carta1->cidade : carta2->cidade);
+
+    // Soma dos atributos
+    float soma1 = valor1_1 + valor1_2;
+    float soma2 = valor2_1 + valor2_2;
+    printf("\n--- Soma dos Atributos ---\n");
+    printf("Soma para %s (%s): %.2f\n", carta1->cidade, carta1->estado, soma1);
+    printf("Soma para %s (%s): %.2f\n", carta2->cidade, carta2->estado, soma2);
+
+    // Verificando o vencedor
+    if (soma1 == soma2) {
+        printf("\nEmpate na rodada!\n");
+    } else {
+        printf("\nVencedor da rodada: %s (%s)\n", (soma1 > soma2) ? carta1->cidade : carta2->cidade, (soma1 > soma2) ? carta1->estado : carta2->estado);
+    }
+}
+
+int main() {
+    Carta cartas[100];
+    int total_cartas = 0;
+    carregarCartas(cartas, &total_cartas);
+
+    // Mostrar as cartas carregadas
+    mostrarCartas(cartas, total_cartas);
+
+    // Escolher as cartas para comparação
     if (total_cartas < 2) {
-        printf("\nÉ necessário ter pelo menos duas cartas cadastradas para comparar.\n");
-        return;
+        printf("\nÉ necessário ter pelo menos duas cartas para comparar!\n");
+        return 0;
     }
 
     char cod1[10], cod2[10];
     Carta *carta1 = NULL, *carta2 = NULL;
-
+    
     printf("\nDigite o código da primeira carta: ");
     scanf("%s", cod1);
     printf("Digite o código da segunda carta: ");
@@ -90,73 +200,23 @@ void compararCartas(Carta cartas[], int total_cartas) {
 
     if (carta1 == NULL || carta2 == NULL) {
         printf("\nUma ou ambas as cartas não foram encontradas! Verifique os códigos e tente novamente.\n");
-        return;
+        return 0;
     }
 
-    int opcao;
-    printf("\nEscolha o atributo para comparar:\n");
-    printf("1 - População\n2 - Área\n3 - PIB\n4 - Pontos turísticos\n5 - Densidade Demográfica (Menor vence)\n");
-    scanf("%d", &opcao);
+    // Escolher atributos para comparar
+    int atributo1, atributo2;
+    printf("\nEscolha o primeiro atributo para comparar:\n");
+    printf("1 - População\n2 - Área\n3 - PIB\n4 - Pontos turísticos\n5 - Densidade Demográfica\n");
+    scanf("%d", &atributo1);
 
-    float valor1, valor2;
-    int inverso = 0;
-    char atributo[50];
+    // Garantir que o segundo atributo seja diferente do primeiro
+    do {
+        printf("\nEscolha o segundo atributo para comparar (não pode ser o mesmo que o primeiro):\n");
+        printf("1 - População\n2 - Área\n3 - PIB\n4 - Pontos turísticos\n5 - Densidade Demográfica\n");
+        scanf("%d", &atributo2);
+    } while (atributo2 == atributo1);
 
-    switch (opcao) {
-        case 1:
-            valor1 = carta1->populacao;
-            valor2 = carta2->populacao;
-            strcpy(atributo, "População");
-            break;
-        case 2:
-            valor1 = carta1->area;
-            valor2 = carta2->area;
-            strcpy(atributo, "Área");
-            break;
-        case 3:
-            valor1 = carta1->pib;
-            valor2 = carta2->pib;
-            strcpy(atributo, "PIB");
-            break;
-        case 4:
-            valor1 = carta1->pontos_turisticos;
-            valor2 = carta2->pontos_turisticos;
-            strcpy(atributo, "Pontos Turísticos");
-            break;
-        case 5:
-            valor1 = carta1->densidade_populacional;
-            valor2 = carta2->densidade_populacional;
-            strcpy(atributo, "Densidade Demográfica");
-            inverso = 1;
-            break;
-        default:
-            printf("Opção inválida!\n");
-            return;
-    }
-
-    printf("\n--- Comparação de %s ---\n", atributo);
-    printf("%s (%s) - %.2f\n", carta1->cidade, carta1->estado, valor1);
-    printf("%s (%s) - %.2f\n", carta2->cidade, carta2->estado, valor2);
-
-    if (valor1 == valor2) {
-        printf("\n🤝 Empate! Ambas as cartas possuem o mesmo valor para %s.\n", atributo);
-    } else if ((valor1 > valor2 && !inverso) || (valor1 < valor2 && inverso)) {
-        printf("\n🏆 Vencedor: %s (%s)\n", carta1->cidade, carta1->estado);
-    } else {
-        printf("\n🏆 Vencedor: %s (%s)\n", carta2->cidade, carta2->estado);
-    }
-}
-
-int main() {
-    Carta cartas[100];
-    int total_cartas = 0;
-    carregarCartas(cartas, &total_cartas);
-    
-    // Mostrar cartas salvas
-    mostrarCartas(cartas, total_cartas);
-
-    // Comparar cartas
-    compararCartas(cartas, total_cartas);
+    compararAtributos(carta1, carta2, atributo1, atributo2);
 
     return 0;
 }
